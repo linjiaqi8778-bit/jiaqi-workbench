@@ -22,6 +22,13 @@ async function collect(){
  const userId=a.user_id;
  const today=dayOnly(0);
  const yesterday=dayOnly(-1);
+ let avatarUrl='',avatarMediaId='';
+ try{
+  const person=await run(['aisearch','person','--query',a.user_name,'--dimension','name']);
+  const match=(person.result||[]).find(x=>x.userId===userId)||person.result?.[0];
+  const avatar=match?.authorAvatar||match?.sourceIcon||'';
+  if(/^https?:\/\//.test(avatar))avatarUrl=avatar;else avatarMediaId=avatar;
+ }catch{}
  const jobs={
  todos:async()=>section(await run(['todo','+get-my-tasks','--all','--status','false']),'todos',x=>({id:x.taskId,title:x.subject||x.title||'未命名待办',date:x.dueTime||x.dueDate||''})),
  calendar:async()=>{
@@ -47,7 +54,7 @@ async function collect(){
   }),summary:{date:today,group:base.group?.name||base.scheduleGroup?.name||'',workTime:base.workTimeDesc||'',unsigned:Boolean(base.isUnSigned),rest:Boolean(base.isRest)}};
  }};
  const values=await Promise.all(Object.entries(jobs).map(async([k,fn])=>{try{return [k,await fn()];}catch(e){return [k,{ok:false,error:e.message}];}}));
- return {connected:true,user:a.user_name,organization:a.corp_name,syncedAt:new Date().toISOString(),...Object.fromEntries(values)};
+ return {connected:true,user:a.user_name,organization:a.corp_name,avatarUrl,avatarMediaId,syncedAt:new Date().toISOString(),...Object.fromEntries(values)};
 }
 async function snapshot(refresh=false){if(pending)return pending;if(cache&&!refresh&&Date.now()-cache.time<60000)return cache.value;pending=collect().then(value=>{cache={value,time:Date.now()};return value;}).finally(()=>pending=null);return pending;}
 module.exports={snapshot};

@@ -1,6 +1,6 @@
 const http=require('http'),fs=require('fs'),path=require('path');
 const {snapshot}=require('./dingtalk-bridge');
-const assets=new Set(['index.html','styles.css','app.js','dingtalk-ui.js']);
+const assets=new Set(['index.html','styles.css','app.js','dingtalk-ui.js','assets/avatar-jiaqi.jpg']);
 http.createServer(async(req,res)=>{
  const host=req.headers.host||'';
  if(!/^(localhost|127\.0\.0\.1):4173$/.test(host)){res.writeHead(403);return res.end();}
@@ -13,5 +13,5 @@ http.createServer(async(req,res)=>{
  }
  const name=url.pathname==='/'?'index.html':url.pathname.slice(1);
  if(!assets.has(name)){res.writeHead(404);return res.end('Not found');}
- fs.readFile(path.join(__dirname,name),(err,data)=>{if(err){res.writeHead(404);return res.end();}res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8');res.end(data);});
+ fs.readFile(path.join(__dirname,name),(err,data)=>{if(err){res.writeHead(404);return res.end();}res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':name.endsWith('.jpg')?'image/jpeg':'text/html; charset=utf-8');res.end(data);});
 }).listen(4173,'127.0.0.1',()=>console.log('http://localhost:4173'));
