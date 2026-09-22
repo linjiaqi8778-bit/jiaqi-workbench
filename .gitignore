@@ -1,0 +1,11 @@
+.env
+.env.*
+.dingtalk-profile.local
+.dws/
+*.log
+node_modules/
+.tools/
+work/
+outputs/
+.DS_Store
+Thumbs.db
