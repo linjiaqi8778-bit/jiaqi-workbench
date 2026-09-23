@@ -10,11 +10,19 @@ function dayOnly(n){return day(n).slice(0,10);}
 function section(r,key,map){const d=r.data||r.result;if(!d||!Array.isArray(d[key]))throw Error('数据结构异常，未同步');return {ok:true,items:d[key].map(map),partial:d.complete===false||d.hasMore===true||Boolean(d.nextCursor)||r.meta?.pagination?.endpoint_exhausted===false};}
 function sameDay(value,target){if(!value)return false;const d=new Date(value);return !isNaN(d)&&d.toISOString().slice(0,10)===target;}
 function ownerIncludes(value,userId){const list=Array.isArray(value)?value:[value];return list.some(x=>x&&x.userId===userId);}
+function topicText(value){
+ if(!value)return '';
+ if(typeof value==='string')return value;
+ if(value.markdown)return value.markdown;
+ if(value.text)return value.text;
+ if(Array.isArray(value.value))return value.value.flat(Infinity).map(x=>typeof x==='string'?x:x?.text||x?.name||'').filter(Boolean).join(' ');
+ return String(value.name||value.title||'');
+}
 function pickTopics(records,userId,today,yesterday){
  return records.map(r=>r.cells||{}).filter(c=>ownerIncludes(c['2yb4kgd'],userId)).filter(c=>{
   const dates=[c.seWEfMl,c['0LaEPDv'],c.RKh5JAF,c.Mdav1bn];
   return dates.some(x=>sameDay(x,today)||sameDay(x,yesterday));
- }).filter(c=>['P0','P1'].includes(c.vFlMw9a?.name)).map((c,i)=>({id:String(i),title:c.Kscxqei||'未命名任务',date:''})).filter(x=>x.title.trim()).slice(0,12);
+ }).filter(c=>['P0','P1'].includes(c.vFlMw9a?.name)).map((c,i)=>({id:String(i),title:topicText(c.fzZIAKI||c.Kscxqei).trim(),date:''})).filter(x=>x.title).slice(0,12);
 }
 let cache,pending;
 async function collect(){
@@ -32,7 +40,7 @@ async function collect(){
  const jobs={
  todos:async()=>section(await run(['todo','+get-my-tasks','--all','--status','false']),'todos',x=>({id:x.taskId,title:x.subject||x.title||'未命名待办',date:x.dueTime||x.dueDate||''})),
  calendar:async()=>{
-  const r=await run(['aitable','+record-query','--base-id','vy20BglGWOABmG5QIvzkYNLgJA7depqY','--table-id','ZjelwFf','--view-id','OFT6290','--field-ids','Kscxqei,2yb4kgd,seWEfMl,0LaEPDv,RKh5JAF,Mdav1bn,vFlMw9a','--all','--limit','20','--max-records','2000']);
+  const r=await run(['aitable','+record-query','--base-id','vy20BglGWOABmG5QIvzkYNLgJA7depqY','--table-id','ZjelwFf','--view-id','OFT6290','--field-ids','fzZIAKI,2yb4kgd,seWEfMl,0LaEPDv,RKh5JAF,Mdav1bn,vFlMw9a','--all','--limit','20','--max-records','2000']);
   return {ok:true,items:pickTopics(r.data?.records||[],userId,today,yesterday),partial:Boolean(r.data?.hasMore)};
  },
  reports:async()=>section(await run(['report','+outbox-list','--start',day(-6),'--end',day(1),'--cursor','0','--size','20']),'reports',x=>({id:x.reportId,title:x.templateName,date:x.createTime})),
